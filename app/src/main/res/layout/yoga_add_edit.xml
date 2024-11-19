@@ -1,0 +1,114 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+        <!-- Spinner for Day of the Week -->
+        <Spinner
+            android:id="@+id/spinnerDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/days_of_week"
+            android:minHeight="48dp" />
+
+        <!-- Time EditText (opens a TimePickerDialog) -->
+        <EditText
+            android:id="@+id/etTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="Select Time"
+            android:minHeight="48dp" />
+
+        <!-- EditText fields for capacity, duration, and price -->
+        <EditText
+            android:id="@+id/etCapacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/capacity"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/etDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Duration"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/etPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <!-- Inline CheckBoxes for class types -->
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3"
+            android:layout_marginTop="16dp">
+
+                <RadioButton
+                    android:id="@+id/cbFlowYoga"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/flow_yoga" />
+
+                <RadioButton
+                    android:id="@+id/cbAerialYoga"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/aerial_yoga" />
+
+                <RadioButton
+                    android:id="@+id/cbFamilyYoga"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/family_yoga" />
+        </RadioGroup>
+
+        <!-- Description field -->
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save" />
+
+        <!--- Add instance button -->
+        <Button
+            android:id="@+id/btnAddInstance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Instance"
+            android:layout_gravity="end"
+            android:layout_marginTop="16dp" />
+
+        <!-- Instances RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvInstances"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:scrollbars="vertical" />
+
+</LinearLayout>

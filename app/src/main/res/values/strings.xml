@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Universal Yoga App</string>
+    <string name="save">Save</string>
+    <string name="aerial_yoga">Aerial Yoga</string>
+    <string name="family_yoga">Family Yoga</string>
+    <string name="flow_yoga">Flow Yoga</string>
+    <string name="capacity">Capacity</string>
+    <string name="add">Add</string>
+    <string-array name="days_of_week">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+</resources>
