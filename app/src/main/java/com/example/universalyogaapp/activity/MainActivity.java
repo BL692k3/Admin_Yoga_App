@@ -13,12 +13,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.universalyogaapp.R;
 import com.example.universalyogaapp.adapter.InstanceAdapter;
@@ -27,10 +27,8 @@ import com.example.universalyogaapp.database.YogaDatabase;
 import com.example.universalyogaapp.model.YogaClass;
 import com.example.universalyogaapp.model.YogaClassInstance;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,22 +40,29 @@ public class MainActivity extends AppCompatActivity {
     private final String DATABASE_URL = "https://comp1786-8d6c2-default-rtdb.firebaseio.com/";
     private RecyclerView recyclerView;
     private FloatingActionButton fabAdd;
-    private YogaClassAdapter adapter;  // Adapter for the RecyclerView
-    private YogaDatabase db;  // SQLite database
+    private YogaClassAdapter adapter;
+    private YogaDatabase db;
     private ActionMode actionMode;
     private EditText searchBar;
     private ImageButton btnAdvancedSearch;
     private InstanceAdapter instanceAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    // Pagination variables
+    private static final int ITEMS_PER_PAGE = 10;
+    private int currentPage = 0;
+    private List<YogaClass> allClasses;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);  // Corresponds to main_activity.xml
+        setContentView(R.layout.activity_main);
 
         recyclerView = findViewById(R.id.recyclerView);
         fabAdd = findViewById(R.id.fabAdd);
         searchBar = findViewById(R.id.searchBar);
         btnAdvancedSearch = findViewById(R.id.btnAdvancedSearch);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
         db = YogaDatabase.getInstance(this);
 
@@ -67,10 +72,10 @@ public class MainActivity extends AppCompatActivity {
         instanceAdapter = new InstanceAdapter(this, db.yogaClassInstanceDao().getAllInstances());
         recyclerView.setAdapter(adapter);
 
-        // Navigate to YogaAddEdit activity to add a new class
+        // Navigate to YogaAddEditActivity activity to add a new class
         fabAdd.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, YogaAddEdit.class);
-            startActivity(intent);  // No data passed, as it's for a new class
+            Intent intent = new Intent(MainActivity.this, YogaAddEditActivity.class);
+            startActivity(intent);
         });
 
         // Handle class item clicks (edit)
@@ -78,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             if (adapter.isSelectionMode()) {
                 adapter.toggleSelection(yogaClass);
             } else {
-                Intent intent = new Intent(MainActivity.this, YogaAddEdit.class);
+                Intent intent = new Intent(MainActivity.this, YogaAddEditActivity.class);
                 intent.putExtra("class_id", yogaClass.getId());
                 startActivity(intent);
             }
@@ -99,10 +104,55 @@ public class MainActivity extends AppCompatActivity {
 
         // Show advanced search options dialog
         btnAdvancedSearch.setOnClickListener(v -> showAdvancedSearchDialog());
+
+        // Set up swipe refresh listener
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            refreshData();
+            swipeRefreshLayout.setRefreshing(false); // Stop the refreshing animation
+        });
+
+        // Set up pagination buttons
+        findViewById(R.id.btnPreviousPage).setOnClickListener(v -> previousPage());
+        findViewById(R.id.btnNextPage).setOnClickListener(v -> nextPage());
     }
 
+    private void updatePageData() {
+        int start = currentPage * ITEMS_PER_PAGE;
+        int end = Math.min(start + ITEMS_PER_PAGE, allClasses.size());
+        List<YogaClass> paginatedClasses = allClasses.subList(start, end);
+        adapter.updateData(paginatedClasses);
+
+        // Enable/disable pagination buttons
+        findViewById(R.id.btnPreviousPage).setEnabled(currentPage > 0);
+        findViewById(R.id.btnNextPage).setEnabled(end < allClasses.size());
+    }
+
+    private void nextPage() {
+        if ((currentPage + 1) * ITEMS_PER_PAGE < allClasses.size()) {
+            currentPage++;
+            updatePageData();
+        }
+    }
+
+    private void previousPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            updatePageData();
+        }
+    }
+
+
+    private void refreshData() {
+        allClasses = db.yogaClassDao().getAllClasses();
+        currentPage = 0; // Reset to the first page
+        updatePageData();
+        Toast.makeText(this, "Data refreshed", Toast.LENGTH_SHORT).show();
+    }
+
+
+
     private void filterClassesByTeacher(String query) {
-        // Retrieve all instances that match the teacher's name (case-insensitive search)
+        // Retrieve all instances that match the teacher's name (case-insensitive)
         List<YogaClassInstance> filteredInstances = db.yogaClassInstanceDao().searchByTeacherName("%" + query + "%");
 
         // Get the IDs of all classes that have matching instances
@@ -135,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_advanced_search, null);
         builder.setView(dialogView);
 
-        RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroup);
+
         RadioButton radioDate = dialogView.findViewById(R.id.radioDate);
         RadioButton radioDayOfWeek = dialogView.findViewById(R.id.radioDayOfWeek);
 
@@ -284,14 +334,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void deleteSelectedClasses() {
         List<YogaClass> selectedClasses = adapter.getSelectedClasses();
-        for (YogaClass yogaClass : selectedClasses) {
-            db.yogaClassDao().delete(yogaClass);
-        }
-        adapter.updateData(db.yogaClassDao().getAllClasses());
+        FirebaseDatabase database = FirebaseDatabase.getInstance(DATABASE_URL);
+        DatabaseReference classesRef = database.getReference("yoga_classes");
 
-        // Sync to Firebase after deletion
-        syncToFirebase();
+        for (YogaClass yogaClass : selectedClasses) {
+            // Remove from local database
+            db.yogaClassDao().delete(yogaClass);
+
+            // Remove from Firebase
+            classesRef.child(String.valueOf(yogaClass.getId()))
+                    .removeValue()
+                    .addOnSuccessListener(aVoid -> Log.d("FirebaseSync", "Class " + yogaClass.getId() + " deleted from Firebase."))
+                    .addOnFailureListener(e -> Log.e("FirebaseSync", "Failed to delete class " + yogaClass.getId() + " from Firebase.", e));
+        }
+
+        // Update the adapter with the remaining classes
+        adapter.updateData(db.yogaClassDao().getAllClasses());
     }
+
 
 
     private void selectAllClasses() {
@@ -303,45 +363,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         adapter.updateData(db.yogaClassDao().getAllClasses());
         instanceAdapter.updateData(db.yogaClassInstanceDao().getAllInstances());
+        refreshData();
     }
-
-    private void syncToFirebase() {
-        // Initialize the Firebase Realtime Database reference
-        FirebaseDatabase database = FirebaseDatabase.getInstance(DATABASE_URL);
-        DatabaseReference classesRef = database.getReference("yoga_classes");
-
-        // Retrieve all yoga classes and instances from the local database
-        List<YogaClass> allClasses = db.yogaClassDao().getAllClasses();
-        List<YogaClassInstance> allInstances = db.yogaClassInstanceDao().getAllInstances();
-
-        // Clear the entire Firebase database path before re-uploading
-        classesRef.removeValue().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Log.d("FirebaseSync", "Firebase database cleared successfully.");
-            } else {
-                Log.e("FirebaseSync", "Failed to clear Firebase database.");
-            }
-
-            // Re-upload all yoga classes and their instances to Firebase
-            for (YogaClass yogaClass : allClasses) {
-                DatabaseReference classRef = classesRef.child(String.valueOf(yogaClass.getId()));
-                classRef.setValue(yogaClass.toMap())
-                        .addOnSuccessListener(aVoid -> Log.d("FirebaseSync", "Class " + yogaClass.getId() + " synced successfully."))
-                        .addOnFailureListener(e -> Log.e("FirebaseSync", "Failed to sync class " + yogaClass.getId(), e));
-
-                // Upload each instance associated with the current yoga class
-                for (YogaClassInstance instance : allInstances) {
-                    if (instance.getClassId() == yogaClass.getId()) {
-                        DatabaseReference instanceRef = classRef.child("instances").child(String.valueOf(instance.getId()));
-                        instanceRef.setValue(instance.toMap())
-                                .addOnSuccessListener(aVoid -> Log.d("FirebaseSync", "Instance " + instance.getId() + " synced successfully."))
-                                .addOnFailureListener(e -> Log.e("FirebaseSync", "Failed to sync instance " + instance.getId(), e));
-                    }
-                }
-            }
-
-            Toast.makeText(this, "Data synchronized with Firebase", Toast.LENGTH_SHORT).show();
-        });
-    }
-
 }

@@ -65,6 +65,10 @@ public class YogaClassInstance {
         this.teacher = teacher;
     }
 
+    public void setClassId(int classId) {
+        this.classId = classId;
+    }
+
     public String getComments() {
         return comments;
     }

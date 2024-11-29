@@ -29,12 +29,43 @@
             android:src="@drawable/ic_filter_list" />
     </LinearLayout>
 
-    <!-- RecyclerView to show the list of items -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <!-- SwipeRefreshLayout wraps the RecyclerView -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="64dp" />
+        android:layout_marginTop="64dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <LinearLayout
+        android:id="@+id/paginationButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_gravity="bottom"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnPreviousPage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Previous"
+            android:enabled="false" />
+
+        <Button
+            android:id="@+id/btnNextPage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next"
+            android:enabled="true"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,5 +77,7 @@
         android:contentDescription="@string/add"
         android:src="@drawable/ic_add"
         android:backgroundTint="@android:color/holo_green_dark"
-        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior" /> <!-- Optional behavior for FAB -->
+        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+

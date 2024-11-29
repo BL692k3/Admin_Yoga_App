@@ -22,7 +22,7 @@
         </activity>
 
         <activity
-            android:name="com.example.universalyogaapp.activity.YogaAddEdit"
+            android:name="com.example.universalyogaapp.activity.YogaAddEditActivity"
             android:exported="true"/>
 
     </application>

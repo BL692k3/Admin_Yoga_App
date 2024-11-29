@@ -11,8 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.universalyogaapp.R;
-import com.example.universalyogaapp.activity.MainActivity;
-import com.example.universalyogaapp.activity.YogaAddEdit;
+import com.example.universalyogaapp.activity.YogaAddEditActivity;
 import com.example.universalyogaapp.model.YogaClassInstance;
 
 import java.util.ArrayList;
@@ -30,6 +29,7 @@ public class InstanceAdapter extends RecyclerView.Adapter<InstanceAdapter.Instan
         this.instanceList = instances;
         this.listener = listener;
     }
+
     public InstanceAdapter(Context context, List<YogaClassInstance> instances) {
         this.context = context;
         this.instanceList = instances;
@@ -98,7 +98,7 @@ public class InstanceAdapter extends RecyclerView.Adapter<InstanceAdapter.Instan
             if (!isSelectionMode) {
                 isSelectionMode = true;
                 listener.onInstanceLongClick(instance);  // Notify the listener of the long-click
-                ((YogaAddEdit) context).startSelectionMode();
+                ((YogaAddEditActivity) context).startSelectionMode();
             }
             toggleSelection(instance);
             notifyDataSetChanged();

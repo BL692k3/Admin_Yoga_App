@@ -28,14 +28,12 @@ import com.example.universalyogaapp.adapter.InstanceAdapter;
 import com.example.universalyogaapp.model.YogaClassInstance;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
-public class YogaAddEdit extends AppCompatActivity implements InstanceAdapter.OnInstanceClickListener, ActionMode.Callback {
+public class YogaAddEditActivity extends AppCompatActivity implements InstanceAdapter.OnInstanceClickListener, ActionMode.Callback {
     private final String DATABASE_URL = "https://comp1786-8d6c2-default-rtdb.firebaseio.com/";
     private RecyclerView rvInstances;
     private InstanceAdapter instanceAdapter;
@@ -348,7 +346,7 @@ public class YogaAddEdit extends AppCompatActivity implements InstanceAdapter.On
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        Log.d("YogaAddEdit", "Action mode started");
+        Log.d("YogaAddEditActivity", "Action mode started");
         // Inflate the menu that should appear during action mode
         getMenuInflater().inflate(R.menu.selection_menu, menu); // Your menu resource (e.g., selection_menu.xml)
         isSelectionMode = true;
@@ -445,13 +443,13 @@ public class YogaAddEdit extends AppCompatActivity implements InstanceAdapter.On
     private int getClassDayOfWeek() {
         String classDay = spinnerDay.getSelectedItem().toString();  // e.g., "Monday"
         switch (classDay) {
+            case "Sunday": return Calendar.SUNDAY;
             case "Monday": return Calendar.MONDAY;
             case "Tuesday": return Calendar.TUESDAY;
             case "Wednesday": return Calendar.WEDNESDAY;
             case "Thursday": return Calendar.THURSDAY;
             case "Friday": return Calendar.FRIDAY;
             case "Saturday": return Calendar.SATURDAY;
-            case "Sunday": return Calendar.SUNDAY;
             default: return Calendar.MONDAY;  // Default to Monday if not found
         }
     }

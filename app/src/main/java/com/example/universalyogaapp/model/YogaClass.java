@@ -39,9 +39,35 @@ public class YogaClass {
         this.id = id;
     }
 
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setClassType(String classType) {
+        this.classType = classType;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getDay() {
         return day;
     }
+
+    public void setDay(String day) { this.day = day; }
 
     public String getTime() {
         return time;
